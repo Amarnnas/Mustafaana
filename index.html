@@ -7,38 +7,67 @@
     <style>
         body {
             font-family: 'Amiri', serif;
-            background-color: #f0f8ff;
+            background-color: #f4f4f9;
             color: #333;
             text-align: center;
             margin: 0;
             padding: 0;
         }
         header {
-            background-color: #008080;
+            background-color: #6c757d;
             color: white;
             padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        p.subtitle {
+            margin: 0;
+            font-size: 1.2em;
         }
         section {
-            margin: 20px;
+            margin: 50px auto;
+            max-width: 600px;
         }
         .content-box {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-            width: 90%;
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
         }
         button {
-            background-color: #008080;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 25px;
             cursor: pointer;
+            font-size: 1.2em;
+            border-radius: 5px;
             margin-top: 20px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #006666;
+            background-color: #0056b3;
+        }
+        footer {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #6c757d;
+            color: white;
+        }
+        footer p {
+            margin: 0;
         }
     </style>
 </head>
@@ -46,6 +75,63 @@
 
     <header>
         <h1>الذكرى الطيبة</h1>
-        <p>آية اليوم - حديث اليوم</p>
-    </
-        
+        <p class="subtitle">آية اليوم - حديث اليوم</p>
+    </header>
+
+    <section>
+        <div class="content-box">
+            <h2>آية اليوم</h2>
+            <p id="quran-verse">جاري تحميل الآية...</p>
+            <button onclick="fetchVerse()">تغيير الآية</button>
+        </div>
+
+        <div class="content-box">
+            <h2>حديث اليوم</h2>
+            <p id="hadith">جاري تحميل الحديث...</p>
+            <button onclick="fetchHadith()">تغيير الحديث</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2024 الذكرى الطيبة - جميع الحقوق محفوظة</p>
+    </footer>
+
+    <script>
+        // استدعاء الآية من API
+        function fetchVerse() {
+            fetch('https://api.alquran.cloud/v1/ayah/random')
+            .then(response => response.json())
+            .then(data => {
+                const verse = data.data.text;
+                const surah = data.data.surah.name;
+                const ayahNumber = data.data.numberInSurah;
+                document.getElementById('quran-verse').textContent = `${verse} (سورة ${surah}، آية ${ayahNumber})`;
+            })
+            .catch(error => {
+                document.getElementById('quran-verse').textContent = 'حدث خطأ في جلب الآية.';
+            });
+        }
+
+        // استدعاء الحديث من API
+        function fetchHadith() {
+            fetch('https://api.hadith.sutanlab.id/books/muslim?range=1-300')
+            .then(response => response.json())
+            .then(data => {
+                const randomHadith = data.data.hadiths[Math.floor(Math.random() * data.data.hadiths.length)];
+                const hadithText = randomHadith.arab;
+                document.getElementById('hadith').textContent = `${hadithText} (المصدر: صحيح مسلم)`;
+            })
+            .catch(error => {
+                document.getElementById('hadith').textContent = 'حدث خطأ في جلب الحديث.';
+            });
+        }
+
+        // استدعاء البيانات عند تحميل الصفحة
+        window.onload = () => {
+            fetchVerse();
+            fetchHadith();
+        };
+    </script>
+
+</body>
+</html>
