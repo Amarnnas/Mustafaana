@@ -1,0 +1,28 @@
+{
+  "name": "siraj-taqwa-frontend",
+  "version": "1.0.0",
+  "description": "نظام إدارة المنشورات الإسلامية - الواجهة الأمامية",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "islamic",
+    "posts",
+    "management",
+    "arabic",
+    "frontend"
+  ],
+  "author": "سراج التقوى",
+  "license": "MIT",
+  "homepage": "https://github.com/username/siraj-taqwa-frontend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/siraj-taqwa-frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/siraj-taqwa-frontend/issues"
+  }
+}
+
