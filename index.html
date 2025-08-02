@@ -3,397 +3,648 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مواقيت الصلاة</title>
-    
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts for a clean look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body { font-family: 'Cairo', sans-serif; }
-        .next-prayer-highlight {
-            background-color: #14b8a6; /* teal-500 */
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        #settings-modal { transition: opacity 0.3s ease-in-out; }
-        .modal-content { transition: transform 0.3s ease-in-out; }
-        /* Style for clear button in time override */
-        .clear-btn {
-            background: none; border: none; font-size: 1.2rem; color: #9ca3af; cursor: pointer;
-        }
-        .clear-btn:hover { color: #f87171; }
-    </style>
+    <title>سراج التقوى - إدارة المنشورات</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-500">
-
-    <!-- Audio elements for Adhan and Iqama -->
-    <audio id="adhan-audio" src="https://www.islamcan.com/audio/adhan/azan2.mp3" preload="auto"></audio>
-    <audio id="iqama-audio" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
-
-    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
-        
-        <!-- Header Section with Settings Button -->
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-4xl md:text-5xl font-bold text-teal-600 dark:text-teal-400">مواقيت الصلاة</h1>
-            <button id="settings-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </button>
-        </header>
-        <p id="location" class="text-lg text-center mb-6 text-gray-600 dark:text-gray-400"></p>
-
-        <!-- Date and Clock Section -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 text-center">
-            <p id="current-date" class="text-xl font-semibold text-gray-700 dark:text-gray-300"></p>
-            <p id="current-time" class="text-5xl font-bold text-teal-600 dark:text-teal-400 tracking-wider mt-2"></p>
-        </div>
-
-        <!-- Sound Enable Prompt -->
-        <div id="sound-prompt" class="hidden bg-yellow-100 dark:bg-yellow-900 border-r-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 p-4 rounded-lg shadow-md mb-6 flex justify-between items-center">
-            <p>لتفعيل صوت الأذان، يرجى الضغط على الزر.</p>
-            <button id="enable-sounds-btn" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600 transition-colors">تفعيل الصوت</button>
-        </div>
-        
-        <!-- Loading / Error Messages -->
-        <div id="loading" class="text-center py-10">
-            <svg class="animate-spin h-10 w-10 text-teal-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <p class="mt-4 text-gray-500">جاري تحميل مواقيت الصلاة...</p>
-        </div>
-        <div id="error" class="hidden bg-red-100 dark:bg-red-900 border-r-4 border-red-500 text-red-700 dark:text-red-200 p-4 rounded-lg shadow-md" role="alert"><p><b>حدث خطأ:</b> عذراً، لم نتمكن من جلب مواقيت الصلاة. يرجى التأكد من اتصالك بالإنترنت.</p></div>
-
-        <!-- Prayer Times Grid -->
-        <main id="prayer-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Prayer cards will be inserted here by JavaScript -->
-        </main>
-        
-        <footer class="text-center mt-10 text-sm text-gray-500 dark:text-gray-400">
-            <p>البيانات مقدمة من <a href="https://aladhan.com/prayer-times-api" target="_blank" class="text-teal-500 hover:underline">Al-Adhan API</a></p>
-        </footer>
-    </div>
-    
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="modal-content bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto transform scale-95">
-            <div class="flex justify-between items-center border-b dark:border-gray-600 pb-3 mb-4">
-                <h2 class="text-2xl font-bold">الإعدادات</h2>
-                <button id="close-modal-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">&times;</button>
+<body>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-mosque"></i>
+                    <h1>سراج التقوى</h1>
+                </div>
+                <p>نظام إدارة المنشورات الإسلامية</p>
             </div>
             
-            <div class="mb-6"><label for="city-selector" class="block font-semibold mb-2">المدينة:</label><select id="city-selector" class="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></select></div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">اسم المستخدم</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" name="password" required<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سراج التقوى - إدارة المنشورات</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-mosque"></i>
+                    <h1>سراج التقوى</h1>
+                </div>
+                <p>نظام إدارة المنشورات الإسلامية</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">اسم المستخدم</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    تسجيل الدخول
+                </button>
+            </form>
+            
+            <div id="loginError" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
 
-            <div class="mb-6"><h3 class="font-bold text-lg mb-2 border-b dark:border-gray-600 pb-1">إعدادات الصوت</h3><div class="flex items-center justify-between mb-2"><label for="adhan-sound-toggle">تفعيل صوت الأذان</label><input type="checkbox" id="adhan-sound-toggle" class="form-checkbox h-5 w-5 text-teal-600"></div><div class="flex items-center justify-between"><label for="iqama-sound-toggle">تفعيل صوت الإقامة</label><input type="checkbox" id="iqama-sound-toggle" class="form-checkbox h-5 w-5 text-teal-600"></div></div>
-
-            <div class="mb-6">
-                <h3 class="font-bold text-lg mb-2 border-b dark:border-gray-600 pb-1">إعدادات الإقامة</h3>
-                <div class="flex items-center justify-between mb-2"><label for="iqama-enable-toggle">عرض وقت الإقامة</label><input type="checkbox" id="iqama-enable-toggle" class="form-checkbox h-5 w-5 text-teal-600"></div>
-                <div id="iqama-delays-container" class="hidden">
-                     <p class="text-sm text-gray-500 mb-2">الوقت بين الأذان والإقامة (بالدقائق):</p>
-                    <div id="iqama-delays-grid" class="grid grid-cols-2 gap-4"></div>
+    <!-- الشاشة الرئيسية -->
+    <div id="mainScreen" class="screen">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-mosque"></i>
+                    <h1>سراج التقوى</h1>
+                </div>
+                
+                <div class="user-info">
+                    <span id="welcomeMessage">مرحباً</span>
+                    <button id="logoutBtn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
                 </div>
             </div>
+        </header>
 
-            <div>
-                <h3 class="font-bold text-lg mb-2 border-b dark:border-gray-600 pb-1">تحديد وقت الأذان يدوياً</h3>
-                <p class="text-sm text-gray-500 mb-2">اترك الحقل فارغاً لاستخدام التوقيت التلقائي.</p>
-                <div id="time-overrides-container" class="grid grid-cols-1 gap-4"></div>
+    <!-- القائمة الجانبية -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>سراج التقوى</h2>
+            <p class="sidebar-subtitle">نظام إدارة المنشورات</p>
+        </div>
+        
+        <!-- قسم التنقل السريع -->
+        <div class="quick-nav">
+            <h3>التنقل السريع</h3>
+            <div class="quick-actions">
+                <button class="quick-btn" data-section="addPost" title="إضافة منشور جديد">
+                    <i class="fas fa-plus"></i>
+                    <span>إضافة</span>
+                </button>
+                <button class="quick-btn" data-section="posts" title="عرض جميع المنشورات">
+                    <i class="fas fa-list"></i>
+                    <span>عرض</span>
+                </button>
+                <button class="quick-btn" onclick="searchPosts()" title="البحث في المنشورات">
+                    <i class="fas fa-search"></i>
+                    <span>بحث</span>
+                </button>
             </div>
+        </div>
+
+        <!-- القائمة الرئيسية -->
+        <ul class="nav-menu">
+            <li><a href="#" class="nav-link active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i> 
+                <span>لوحة التحكم</span>
+                <div class="nav-indicator"></div>
+            </a></li>
+            <li><a href="#" class="nav-link" data-section="addPost">
+                <i class="fas fa-plus"></i> 
+                <span>إضافة منشور</span>
+                <div class="nav-indicator"></div>
+            </a></li>
+            <li><a href="#" class="nav-link" data-section="posts">
+                <i class="fas fa-file-alt"></i> 
+                <span>المنشورات</span>
+                <div class="nav-indicator"></div>
+            </a></li>
+            <li id="adminMenu" style="display: none;">
+                <a href="#" class="nav-link" data-section="users">
+                    <i class="fas fa-users"></i> 
+                    <span>إدارة المستخدمين</span>
+                    <div class="nav-indicator"></div>
+                </a>
+            </li>
+        </ul>
+
+        <!-- إحصائيات سريعة -->
+        <div class="sidebar-stats">
+            <h3>إحصائيات سريعة</h3>
+            <div class="stat-item">
+                <i class="fas fa-file-alt"></i>
+                <div>
+                    <span class="stat-number" id="sidebarTotalPosts">0</span>
+                    <span class="stat-label">إجمالي المنشورات</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-calendar-day"></i>
+                <div>
+                    <span class="stat-number" id="sidebarTodayPosts">0</span>
+                    <span class="stat-label">منشورات اليوم</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="sidebarUsername">المستخدم</span>
+            </div>
+            <button id="logoutBtn" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </button>
+        </div>
+    </nav>2><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPosts">0</h3>
+                            <p>إجمالي المنشورات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="todayPosts">0</h3>
+                            <p>منشورات اليوم</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalCategories">0</h3>
+                            <p>التصنيفات</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-posts">
+                    <h3>آخر المنشورات</h3>
+                    <div id="recentPostsList" class="posts-list"></div>
+                </div>
+            </section>
+
+            <!-- قائمة المنشورات -->
+            <section id="posts" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-alt"></i> المنشورات</h2>
+                    
+                    <div class="search-filters">
+                        <input type="text" id="searchInput" placeholder="البحث في المنشورات...">
+                        <select id="categoryFilter">
+                            <option value="">جميع التصنيفات</option>
+                        </select>
+                        <button id="searchBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            بحث
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="postsList" class="posts-list"></div>
+            </section>
+
+            <!-- إضافة منشور -->
+            <section id="add-post" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-plus"></i> إضافة منشور جديد</h2>
+                </div>
+                
+                <form id="postForm" class="post-form">
+                    <div class="form-group">
+                        <label for="postTitle">عنوان المنشور</label>
+                        <input type="text" id="postTitle" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postCategory">التصنيف</label>
+                        <input type="text" id="postCategory" name="category" placeholder="مثال: آيات قرآنية، أحاديث، دعاء">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postContent">محتوى المنشور</label>
+                        <textarea id="postContent" name="content" rows="10" required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            حفظ المنشور
+                        </button>
+                        <button type="button" id="clearForm" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            مسح النموذج
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- إدارة المستخدمين -->
+            <section id="users" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> إدارة المستخدمين</h2>
+                    <button id="addUserBtn" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        إضافة مستخدم
+                    </button>
+                </div>
+                
+                <div id="usersList" class="users-list"></div>
+                
+                <!-- نموذج إضافة مستخدم -->
+                <div id="addUserModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>إضافة مستخدم جديد</h3>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        
+                        <form id="addUserForm">
+                            <div class="form-group">
+                                <label for="newUsername">اسم المستخدم</label>
+                                <input type="text" id="newUsername" name="username" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPassword">كلمة المرور</label>
+                                <input type="password" id="newPassword" name="password" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="isAdmin" name="is_admin">
+                                    مسؤول
+                                </label>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">إضافة</button>
+                                <button type="button" class="btn btn-secondary close-modal">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- نموذج تعديل المنشور -->
+    <div id="editPostModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل المنشور</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <form id="editPostForm">
+                <input type="hidden" id="editPostId">
+                
+                <div class="form-group">
+                    <label for="editPostTitle">عنوان المنشور</label>
+                    <input type="text" id="editPostTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editPostCategory">التصنيف</label>
+                    <input type="text" id="editPostCategory" name="category">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editPostContent">محتوى المنشور</label>
+                    <textarea id="editPostContent" name="content" rows="10" required></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    <button type="button" class="btn btn-secondary close-modal">إلغاء</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script>
-        // --- DOM Elements ---
-        const locationElement = document.getElementById('location');
-        const dateElement = document.getElementById('current-date');
-        const timeElement = document.getElementById('current-time');
-        const loadingElement = document.getElementById('loading');
-        const errorElement = document.getElementById('error');
-        const prayerGridElement = document.getElementById('prayer-grid');
-        const citySelector = document.getElementById('city-selector');
-        const settingsBtn = document.getElementById('settings-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const settingsModal = document.getElementById('settings-modal');
-        const adhanAudio = document.getElementById('adhan-audio');
-        const iqamaAudio = document.getElementById('iqama-audio');
-        const soundPrompt = document.getElementById('sound-prompt');
-        const enableSoundsBtn = document.getElementById('enable-sounds-btn');
-
-        // --- Settings Elements ---
-        const adhanSoundToggle = document.getElementById('adhan-sound-toggle');
-        const iqamaSoundToggle = document.getElementById('iqama-sound-toggle');
-        const iqamaEnableToggle = document.getElementById('iqama-enable-toggle');
-        const iqamaDelaysContainer = document.getElementById('iqama-delays-container');
-        const iqamaDelaysGrid = document.getElementById('iqama-delays-grid');
-        const timeOverridesContainer = document.getElementById('time-overrides-container');
-
-        // --- Data & State ---
-        const PRAYER_NAMES = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-        const SUDAN_CITIES_MAP = {
-            "الخرطوم": "Khartoum", "أم درمان": "Omdurman", "بحري": "Khartoum North", "بورتسودان": "Port Sudan", "كسلا": "Kassala", "الأبيض": "El-Obeid", "كوستي": "Kosti", "ود مدني": "Wad Medani", "القضارف": "Al Qadarif", "الفاشر": "El Fasher", "الجنينة": "Geneina", "نيالا": "Nyala", "الدمازين": "Ad-Damazin", "سنار": "Sennar", "عطبرة": "Atbara", "دنقلا": "Dongola", "حلفا الجديدة": "New Halfa"
-        };
-        const SUDAN_CITIES_ARABIC = Object.keys(SUDAN_CITIES_MAP);
-        const prayerDetails = { 'Fajr': { name: 'الفجر'}, 'Sunrise': { name: 'الشروق'}, 'Dhuhr': { name: 'الظهر'}, 'Asr': { name: 'العصر'}, 'Maghrib': { name: 'المغرب'}, 'Isha': { name: 'العشاء'} };
-        let prayerTimesData = {};
-        let iqamaTimesData = {};
-        let soundEnabledByUser = false;
-        let playedToday = {};
-        
-        // --- Default Settings ---
-        const defaultSettings = {
-            city: 'عطبرة',
-            method: 4,
-            overrides: { Fajr: '', Dhuhr: '', Asr: '', Maghrib: '', Isha: '' },
-            sounds: { adhan: false, iqama: false },
-            iqama: { enabled: false, delays: { Fajr: 15, Dhuhr: 10, Asr: 10, Maghrib: 5, Isha: 15 } }
-        };
-        let settings = {};
-
-        function loadSettings() {
-            try {
-                const savedSettings = JSON.parse(localStorage.getItem('prayerTimesSettings'));
-                // A simple merge that handles nested objects
-                settings = {
-                    ...defaultSettings,
-                    ...savedSettings,
-                    overrides: { ...defaultSettings.overrides, ...(savedSettings?.overrides || {}) },
-                    sounds: { ...defaultSettings.sounds, ...(savedSettings?.sounds || {}) },
-                    iqama: { ...defaultSettings.iqama, ...(savedSettings?.iqama || {}), delays: {...defaultSettings.iqama.delays, ...(savedSettings?.iqama?.delays || {})}}
-                };
-            } catch (e) {
-                settings = defaultSettings;
-            }
-        }
-
-        function saveSettings() {
-            localStorage.setItem('prayerTimesSettings', JSON.stringify(settings));
-        }
-        
-        function populateSettingsForm() {
-            citySelector.value = settings.city;
-            adhanSoundToggle.checked = settings.sounds.adhan;
-            iqamaSoundToggle.checked = settings.sounds.iqama;
-            iqamaEnableToggle.checked = settings.iqama.enabled;
-            iqamaDelaysContainer.style.display = settings.iqama.enabled ? 'block' : 'none';
-
-            // Populate individual Iqama delays and Time overrides
-            iqamaDelaysGrid.innerHTML = '';
-            timeOverridesContainer.innerHTML = '';
-            PRAYER_NAMES.forEach(prayer => {
-                // Iqama Delay Inputs
-                iqamaDelaysGrid.innerHTML += `
-                    <div class="flex flex-col">
-                        <label for="${prayer}-iqama-delay" class="text-sm dark:text-gray-300">${prayerDetails[prayer].name}</label>
-                        <input type="number" id="${prayer}-iqama-delay" data-prayer="${prayer}" value="${settings.iqama.delays[prayer]}" class="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-                    </div>`;
-                
-                // Time Override Inputs
-                timeOverridesContainer.innerHTML += `
-                     <div class="flex items-center gap-2">
-                        <label for="${prayer}-override" class="w-16 dark:text-gray-300">${prayerDetails[prayer].name}</label>
-                        <input type="time" id="${prayer}-override" data-prayer="${prayer}" value="${settings.overrides[prayer]}" class="flex-grow p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-                        <button class="clear-btn" data-prayer="${prayer}" title="مسح الوقت اليدوي">&times;</button>
-                     </div>`;
-            });
-        }
-        
-        function initializeSettingsListeners() {
-            citySelector.addEventListener('change', e => { settings.city = e.target.value; updateUI(); });
-            adhanSoundToggle.addEventListener('change', e => { settings.sounds.adhan = e.target.checked; saveSettings(); });
-            iqamaSoundToggle.addEventListener('change', e => { settings.sounds.iqama = e.target.checked; saveSettings(); });
-            
-            iqamaEnableToggle.addEventListener('change', e => {
-                settings.iqama.enabled = e.target.checked;
-                iqamaDelaysContainer.style.display = e.target.checked ? 'block' : 'none';
-                updateUI();
-            });
-
-            settingsModal.addEventListener('input', e => {
-                const prayer = e.target.dataset.prayer;
-                if (!prayer) return;
-                
-                if (e.target.id.includes('-iqama-delay')) {
-                    settings.iqama.delays[prayer] = parseInt(e.target.value) || 10;
-                    updateUI();
-                }
-                if (e.target.id.includes('-override')) {
-                    settings.overrides[prayer] = e.target.value;
-                    updateUI();
-                }
-            });
-
-             settingsModal.addEventListener('click', e => {
-                if (e.target.matches('.clear-btn')) {
-                    const prayer = e.target.dataset.prayer;
-                    document.getElementById(`${prayer}-override`).value = '';
-                    settings.overrides[prayer] = '';
-                    updateUI();
-                }
-             });
-        }
-
-        async function updateUI() {
-            saveSettings();
-            loadingElement.style.display = 'block';
-            prayerGridElement.classList.add('hidden');
-            errorElement.classList.add('hidden');
-            locationElement.textContent = `لمدينة ${settings.city}, السودان`;
-
-            const englishCity = SUDAN_CITIES_MAP[settings.city];
-            if (!englishCity) { console.error("City not found in map:", settings.city); return; }
-
-            const apiURL = `https://api.aladhan.com/v1/timingsByCity?city=${englishCity}&country=Sudan&method=${settings.method}`;
-            try {
-                const response = await fetch(apiURL);
-                if (!response.ok) throw new Error(`API error ${response.status}`);
-                const data = await response.json();
-                if (data.code !== 200) throw new Error(`API returned non-200 code: ${data.status}`);
-
-                processAndDisplayTimes(data.data.timings);
-            } catch (e) {
-                console.error("Failed to fetch or parse prayer times:", e);
-                errorElement.classList.remove('hidden');
-            } finally {
-                loadingElement.style.display = 'none';
-            }
-        }
-        
-        function processAndDisplayTimes(apiTimings) {
-            prayerTimesData = {};
-            iqamaTimesData = {};
-            prayerGridElement.innerHTML = '';
-            
-            const prayersToProcess = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-
-            prayersToProcess.forEach(prayerKey => {
-                let prayerTime = new Date();
-                const overrideTime = settings.overrides[prayerKey];
-                
-                if (overrideTime) {
-                    // Use manual override time
-                    const [h, m] = overrideTime.split(':');
-                    prayerTime.setHours(h, m, 0, 0);
-                } else {
-                    // Use API time
-                    const [h, m] = apiTimings[prayerKey].split(':');
-                    prayerTime.setHours(h, m, 0, 0);
-                }
-                
-                prayerTimesData[prayerKey] = `${String(prayerTime.getHours()).padStart(2,'0')}:${String(prayerTime.getMinutes()).padStart(2,'0')}`;
-                
-                let iqamaTime = null;
-                if (settings.iqama.enabled && PRAYER_NAMES.includes(prayerKey)) {
-                    iqamaTime = new Date(prayerTime.getTime());
-                    const delay = settings.iqama.delays[prayerKey] || 10;
-                    iqamaTime.setMinutes(iqamaTime.getMinutes() + delay);
-                    iqamaTimesData[prayerKey] = `${String(iqamaTime.getHours()).padStart(2,'0')}:${String(iqamaTime.getMinutes()).padStart(2,'0')}`;
-                }
-
-                const card = createPrayerCard(prayerKey, prayerTime, iqamaTime);
-                prayerGridElement.appendChild(card);
-            });
-            prayerGridElement.classList.remove('hidden');
-            highlightNextPrayer();
-        }
-
-        function createPrayerCard(prayerKey, prayerTime, iqamaTime) {
-            const card = document.createElement('div');
-            card.id = `card-${prayerKey}`;
-            card.className = "bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex flex-col justify-center text-center transition-all duration-300";
-            
-            let iqamaHTML = '';
-            if (iqamaTime) {
-                iqamaHTML = `<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">الإقامة: ${formatTime(iqamaTime)}</p>`;
-            }
-
-            card.innerHTML = `
-                <p class="text-xl font-bold">${prayerDetails[prayerKey].name}</p>
-                <p class="text-3xl font-semibold text-gray-700 dark:text-gray-300 my-1">${formatTime(prayerTime)}</p>
-                ${iqamaHTML}
-            `;
-            return card;
-        }
-
-        function highlightNextPrayer() {
-            const now = new Date();
-            document.querySelectorAll('.next-prayer-highlight').forEach(el => el.classList.remove('next-prayer-highlight'));
-            document.querySelectorAll('.fajr-tomorrow-text').forEach(el => el.remove());
-            
-            const timePoints = [];
-            Object.entries(prayerTimesData).forEach(([name, time]) => { if (prayerDetails[name]) timePoints.push({ name, time}); });
-            if (settings.iqama.enabled) { Object.entries(iqamaTimesData).forEach(([name, time]) => { timePoints.push({ name, time}); }); }
-
-            const upcoming = timePoints
-                .map(p => ({...p, date: new Date(now.toDateString() + ' ' + p.time)}))
-                .filter(p => p.date > now)
-                .sort((a,b) => a.date - b.date);
-            
-            let nextPrayerName;
-            if (upcoming.length > 0) {
-                nextPrayerName = upcoming[0].name;
-            } else { 
-                nextPrayerName = 'Fajr';
-                const fajrCard = document.getElementById('card-Fajr')?.querySelector('p:first-child');
-                if(fajrCard && !fajrCard.querySelector('.fajr-tomorrow-text')) {
-                    fajrCard.innerHTML += ` <span class="fajr-tomorrow-text text-sm">(غداً)</span>`;
-                }
-            }
-            document.getElementById(`card-${nextPrayerName}`)?.classList.add('next-prayer-highlight');
-        }
-
-        function timeCheckLoop() {
-            setInterval(() => {
-                if (!soundEnabledByUser) return;
-                const now = new Date();
-                const currentTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                const today = now.toISOString().split('T')[0];
-
-                if (settings.sounds.adhan) {
-                    for (const [prayer, time] of Object.entries(prayerTimesData)) {
-                        if (time === currentTime && !playedToday[`${today}-${prayer}-adhan`]) {
-                            adhanAudio.play(); playedToday[`${today}-${prayer}-adhan`] = true;
-                        }
-                    }
-                }
-                if (settings.sounds.iqama && settings.iqama.enabled) {
-                     for (const [prayer, time] of Object.entries(iqamaTimesData)) {
-                        if (time === currentTime && !playedToday[`${today}-${prayer}-iqama`]) {
-                            iqamaAudio.play(); playedToday[`${today}-${prayer}-iqama`] = true;
-                        }
-                    }
-                }
-            }, 1000 * 30); 
-        }
-
-        function formatTime(dateObj) { return dateObj.toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit', hour12: true }); }
-        function updateClockAndDate() {
-            const now = new Date();
-            timeElement.textContent = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-            dateElement.textContent = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
-
-        window.onload = () => {
-            SUDAN_CITIES_ARABIC.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city; option.textContent = city; citySelector.appendChild(option);
-            });
-            loadSettings(); populateSettingsForm(); initializeSettingsListeners();
-            updateClockAndDate(); setInterval(updateClockAndDate, 1000);
-            updateUI(); timeCheckLoop();
-            if(!soundEnabledByUser) soundPrompt.classList.remove('hidden');
-
-            settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
-            closeModalBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
-            settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); });
-            enableSoundsBtn.addEventListener('click', () => {
-                adhanAudio.play().then(() => adhanAudio.pause()).catch(e => console.error(e));
-                iqamaAudio.play().then(() => iqamaAudio.pause()).catch(e => console.error(e));
-                soundEnabledByUser = true; soundPrompt.style.display = 'none';
-            });
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
+
+
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    تسجيل الدخول
+                </button>
+            </form>
+            
+            <div id="loginError" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- الشاشة الرئيسية -->
+    <div id="mainScreen" class="screen">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-mosque"></i>
+                    <h1>سراج التقوى</h1>
+                </div>
+                
+                <div class="user-info">
+                    <span id="welcomeMessage">مرحباً</span>
+                    <button id="logoutBtn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i>
+                        تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+    <!-- القائمة الجانبية -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>سراج التقوى</h2>
+            <p class="sidebar-subtitle">نظام إدارة المنشورات</p>
+        </div>
+        
+        <!-- قسم التنقل السريع -->
+        <div class="quick-nav">
+            <h3>التنقل السريع</h3>
+            <div class="quick-actions">
+                <button class="quick-btn" data-section="addPost" title="إضافة منشور جديد">
+                    <i class="fas fa-plus"></i>
+                    <span>إضافة</span>
+                </button>
+                <button class="quick-btn" data-section="posts" title="عرض جميع المنشورات">
+                    <i class="fas fa-list"></i>
+                    <span>عرض</span>
+                </button>
+                <button class="quick-btn" onclick="searchPosts()" title="البحث في المنشورات">
+                    <i class="fas fa-search"></i>
+                    <span>بحث</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- القائمة الرئيسية -->
+        <ul class="nav-menu">
+            <li><a href="#" class="nav-link active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i> 
+                <span>لوحة التحكم</span>
+                <div class="nav-indicator"></div>
+            </a></li>
+            <li><a href="#" class="nav-link" data-section="addPost">
+                <i class="fas fa-plus"></i> 
+                <span>إضافة منشور</span>
+                <div class="nav-indicator"></div>
+            </a></li>
+            <li><a href="#" class="nav-link" data-section="posts">
+                <i class="fas fa-file-alt"></i> 
+                <span>المنشورات</span>
+                <div class="nav-indicator"></div>
+            </a></li>
+            <li id="adminMenu" style="display: none;">
+                <a href="#" class="nav-link" data-section="users">
+                    <i class="fas fa-users"></i> 
+                    <span>إدارة المستخدمين</span>
+                    <div class="nav-indicator"></div>
+                </a>
+            </li>
+        </ul>
+
+        <!-- إحصائيات سريعة -->
+        <div class="sidebar-stats">
+            <h3>إحصائيات سريعة</h3>
+            <div class="stat-item">
+                <i class="fas fa-file-alt"></i>
+                <div>
+                    <span class="stat-number" id="sidebarTotalPosts">0</span>
+                    <span class="stat-label">إجمالي المنشورات</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-calendar-day"></i>
+                <div>
+                    <span class="stat-number" id="sidebarTodayPosts">0</span>
+                    <span class="stat-label">منشورات اليوم</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="sidebarUsername">المستخدم</span>
+            </div>
+            <button id="logoutBtn" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </button>
+        </div>
+    </nav>2><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPosts">0</h3>
+                            <p>إجمالي المنشورات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="todayPosts">0</h3>
+                            <p>منشورات اليوم</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalCategories">0</h3>
+                            <p>التصنيفات</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-posts">
+                    <h3>آخر المنشورات</h3>
+                    <div id="recentPostsList" class="posts-list"></div>
+                </div>
+            </section>
+
+            <!-- قائمة المنشورات -->
+            <section id="posts" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-alt"></i> المنشورات</h2>
+                    
+                    <div class="search-filters">
+                        <input type="text" id="searchInput" placeholder="البحث في المنشورات...">
+                        <select id="categoryFilter">
+                            <option value="">جميع التصنيفات</option>
+                        </select>
+                        <button id="searchBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            بحث
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="postsList" class="posts-list"></div>
+            </section>
+
+            <!-- إضافة منشور -->
+            <section id="add-post" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-plus"></i> إضافة منشور جديد</h2>
+                </div>
+                
+                <form id="postForm" class="post-form">
+                    <div class="form-group">
+                        <label for="postTitle">عنوان المنشور</label>
+                        <input type="text" id="postTitle" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postCategory">التصنيف</label>
+                        <input type="text" id="postCategory" name="category" placeholder="مثال: آيات قرآنية، أحاديث، دعاء">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="postContent">محتوى المنشور</label>
+                        <textarea id="postContent" name="content" rows="10" required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            حفظ المنشور
+                        </button>
+                        <button type="button" id="clearForm" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            مسح النموذج
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- إدارة المستخدمين -->
+            <section id="users" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> إدارة المستخدمين</h2>
+                    <button id="addUserBtn" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        إضافة مستخدم
+                    </button>
+                </div>
+                
+                <div id="usersList" class="users-list"></div>
+                
+                <!-- نموذج إضافة مستخدم -->
+                <div id="addUserModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>إضافة مستخدم جديد</h3>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        
+                        <form id="addUserForm">
+                            <div class="form-group">
+                                <label for="newUsername">اسم المستخدم</label>
+                                <input type="text" id="newUsername" name="username" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPassword">كلمة المرور</label>
+                                <input type="password" id="newPassword" name="password" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="isAdmin" name="is_admin">
+                                    مسؤول
+                                </label>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">إضافة</button>
+                                <button type="button" class="btn btn-secondary close-modal">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- نموذج تعديل المنشور -->
+    <div id="editPostModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل المنشور</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <form id="editPostForm">
+                <input type="hidden" id="editPostId">
+                
+                <div class="form-group">
+                    <label for="editPostTitle">عنوان المنشور</label>
+                    <input type="text" id="editPostTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editPostCategory">التصنيف</label>
+                    <input type="text" id="editPostCategory" name="category">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editPostContent">محتوى المنشور</label>
+                    <textarea id="editPostContent" name="content" rows="10" required></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    <button type="button" class="btn btn-secondary close-modal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
